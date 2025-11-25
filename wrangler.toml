@@ -23,3 +23,10 @@ vars = { KOBO_BASE_URL = "https://kf.kobotoolbox.org" }
 # routes = [
 #   { pattern = "kobo-proxy.yourdomain.com/*", custom_domain = true }
 # ]
+
+[observability]
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+persist = true

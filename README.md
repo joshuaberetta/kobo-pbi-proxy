@@ -110,6 +110,13 @@ in
 
 ## Troubleshooting
 
+*   **"Access to the resource is forbidden" (403) in Power BI**:
+    *   **Cause 1: Cloudflare WAF / Bot Fight Mode**: Cloudflare often blocks Power BI's User-Agent (`Microsoft.Data.Mashup`).
+        *   **Fix**: Go to your Cloudflare Dashboard -> Security -> WAF. Check the "Firewall Events" log. If you see blocked requests from Power BI, create a Custom Rule to **Skip** the WAF for requests where the User Agent contains `Microsoft.Data.Mashup`. Alternatively, disable "Bot Fight Mode".
+    *   **Cause 2: Stale Credentials**:
+        *   **Fix**: Go to **File** -> **Options and settings** -> **Data source settings**. Select the entry for your worker URL and click **Clear Permissions**. Then try connecting again, ensuring you select **Anonymous**.
+    *   **Cause 3: Invalid Key**: Ensure the API key in your URL matches exactly what is in `permissions.json`.
+
 *   **Invalid API Key**: Check that your key exists in the `permissions.json` you uploaded.
 *   **Access Denied**: Ensure the key is allowed to access the specific Asset UID and Export Setting UID requested.
 *   **Upstream Error**: If Kobo returns an error, the proxy will pass it through. Check if the Export Setting UID is valid and the export has been generated in Kobo.

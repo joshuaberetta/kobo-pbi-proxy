@@ -30,24 +30,49 @@ export default {
       }
 
       // 2. Authentication
-      // Check header first, then query param (useful for Power BI)
-      let apiKey = request.headers.get('X-API-Key');
-      if (!apiKey) {
-        apiKey = url.searchParams.get('api_key');
+      // Check header first, then query param. 
+      // We check both to see if EITHER provides a valid key.
+      // TRIM WHITESPACE to avoid copy-paste errors
+      
+      const headerKey = (request.headers.get('X-API-Key') || '').trim();
+      const queryKey = (url.searchParams.get('api_key') || '').trim();
+      
+      let apiKey = null;
+      let userPermissions = null;
+
+      // Debugging Logs (Check Cloudflare Worker Logs)
+      console.log(`Received Request: ${request.url}`);
+      console.log(`Header Key: '${headerKey}'`);
+      console.log(`Query Key: '${queryKey}'`);
+      console.log(`Available Keys in Permissions: ${Object.keys(PERMISSIONS).join(', ')}`);
+
+      // Try header key
+      if (headerKey && PERMISSIONS[headerKey]) {
+        apiKey = headerKey;
+        userPermissions = PERMISSIONS[headerKey];
+      } 
+      // Try query key if header didn't work
+      else if (queryKey && PERMISSIONS[queryKey]) {
+        apiKey = queryKey;
+        userPermissions = PERMISSIONS[queryKey];
       }
 
       if (!apiKey) {
+        console.error('Authentication Failed: No matching key found.');
+        // If we have a key but it was invalid, return 403. 
+        // If we had no key at all, return 401.
+        if (headerKey || queryKey) {
+             return jsonResponse({ error: 'Invalid API Key' }, 403);
+        }
         return jsonResponse({ error: 'Missing API Key. Provide X-API-Key header or api_key query parameter.' }, 401);
       }
 
-      const userPermissions = PERMISSIONS[apiKey];
-      if (!userPermissions) {
-        return jsonResponse({ error: 'Invalid API Key' }, 403);
-      }
+      console.log(`Authenticated as: ${apiKey}`);
 
       // 3. Routing
       // Pattern: /exports/<asset_uid>/<export-settings_uid>/<xlsx | csv>
-      const pathParts = url.pathname.split('/').filter(p => p); // Remove empty strings
+      // Trim path parts too
+      const pathParts = url.pathname.split('/').filter(p => p).map(p => p.trim());
       
       // Expecting: ['exports', 'asset_uid', 'setting_uid', 'format']
       if (pathParts.length === 4 && pathParts[0] === 'exports') {
@@ -81,6 +106,7 @@ async function handleExportRequest(request, env, permissions, assetUid, settingU
   );
 
   if (!isAllowed) {
+    console.error(`Access Denied: Key has no permission for Asset: ${assetUid}, Setting: ${settingUid}`);
     return jsonResponse({ error: 'Access denied for this asset/export setting combination.' }, 403);
   }
 
@@ -88,6 +114,8 @@ async function handleExportRequest(request, env, permissions, assetUid, settingU
   // Default to Kobo Humanitarian if not set, but user snippet used kf.kobotoolbox.org
   const koboBaseUrl = (env.KOBO_BASE_URL || 'https://kf.kobotoolbox.org').replace(/\/$/, '');
   const upstreamUrl = `${koboBaseUrl}/api/v2/assets/${assetUid}/export-settings/${settingUid}/data.${format}`;
+
+  console.log(`Proxying to: ${upstreamUrl}`);
 
   // 4. Fetch from Kobo
   // We need the worker's own Kobo token to authenticate with upstream
@@ -104,6 +132,7 @@ async function handleExportRequest(request, env, permissions, assetUid, settingU
   });
 
   if (!koboResponse.ok) {
+    console.error(`Upstream Error: ${koboResponse.status}`);
     return jsonResponse({ 
       error: 'Upstream Kobo Error', 
       status: koboResponse.status,
