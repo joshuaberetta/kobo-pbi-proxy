@@ -1,0 +1,24 @@
+{
+  "name": "kobo-pbi-proxy",
+  "version": "1.0.0",
+  "description": "Secure proxy layer between KoboToolbox and Power BI with field-level permissions",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "tail": "wrangler tail"
+  },
+  "keywords": [
+    "kobo",
+    "powerbi",
+    "proxy",
+    "data-security"
+  ],
+  "author": "Josh - KoboToolbox",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

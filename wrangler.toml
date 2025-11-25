@@ -1,0 +1,25 @@
+name = "kobo-pbi-proxy"
+main = "src/index.js"
+compatibility_date = "2024-01-15"
+
+# Environment variables (DO NOT commit real values to git)
+# Set these using: wrangler secret put KOBO_API_TOKEN
+
+[vars]
+# Public configuration only. Secrets (like API tokens) must be set via `wrangler secret put`.
+KOBO_BASE_URL = "https://kf.kobotoolbox.org"
+
+# For production deployment
+[env.production]
+name = "kobo-pbi-proxy-prod"
+vars = { KOBO_BASE_URL = "https://kf.kobotoolbox.org" }
+
+# For staging/testing
+[env.staging]
+name = "kobo-pbi-proxy-staging"
+vars = { KOBO_BASE_URL = "https://kf.kobotoolbox.org" }
+
+# Custom domains (uncomment and configure after deployment)
+# routes = [
+#   { pattern = "kobo-proxy.yourdomain.com/*", custom_domain = true }
+# ]

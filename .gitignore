@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Wrangler
+.wrangler/
+.dev.vars
+
+# Environment files
+.env
+.env.local
+
+# Secrets - NEVER commit these
+secrets.txt
+api-keys.txt
+permissions.json
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
