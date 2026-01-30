@@ -1,125 +1,67 @@
-# KoboToolbox Synchronous Export Proxy
+# Kobo PowerBI Proxy (Python/Flask)
 
-A secure, simplified proxy for connecting KoboToolbox Synchronous Exports to Power BI and other tools.
-
-## Overview
-
-This Cloudflare Worker proxies requests to KoboToolbox's "Synchronous Export" API. It allows you to:
-
-1.  **Securely share data**: Map API keys to specific export settings without sharing your main Kobo credentials.
-2.  **Simplify Power BI connection**: Use a stable URL with query parameter authentication, avoiding complex header configurations in Power Query.
-3.  **Control access**: Grant granular access to specific saved exports (e.g., "Partner A" only sees the "Partner A Export" settings).
+This application proxies requests from PowerBI (or any HTTP client) to KoboToolbox, allowing you to secure your main API key while granting granular access to specific exports via revocable tokens.
 
 ## Architecture
 
-```
-Power BI (Web Connector) 
-       ↓
-Cloudflare Worker (Validates Key & Permissions from Secret)
-       ↓
-KoboToolbox API (Fetches Pre-generated Export)
-       ↓
-Returns CSV/Excel File
-```
+- **Backend**: Python Flask
+- **Database**: SQLite (Persisted in Docker volume)
+- **Encryption**: User Kobo Keys are encrypted using Fernet (symmetric encryption).
+- **Hosting**: Docker / Docker Compose
 
-## Setup & Deployment
+## Getting Started
 
-### 1. Prerequisites
--   **Cloudflare Account**: You need a Cloudflare account to deploy the worker.
--   **Wrangler CLI**: Install via `npm install -g wrangler`.
--   **KoboToolbox Account**: You need an Admin Token from Kobo.
+### Prerequisites
 
-### 2. Configure Permissions
-Permissions are stored in a secure Cloudflare Worker Secret named `PROXY_PERMISSIONS`.
+- Docker and Docker Compose installed.
 
-1.  Create a local file named `permissions.json` (do not commit this to git):
-    ```json
-    {
-      "partner-agency-key": {
-        "name": "Partner Agency A",
-        "allowed": [
-          { 
-            "asset": "aiBgJcvz5AFHB54fKpG2y5",
-            "setting": "esuPrAsvJANYiJ6jZcA9KM9"
-          }
-        ]
-      }
-    }
-    ```
-    *   **asset**: The Kobo Asset UID (found in the form URL).
-    *   **setting**: The Export Setting UID (found in Kobo's API or URL when editing an export).
+### Installation
 
-2.  Upload the permissions:
+1.  Clone the repository.
+2.  Copy the example environment file:
     ```bash
-    wrangler secret put PROXY_PERMISSIONS < permissions.json
+    cp .env.example .env
+    ```
+3.  Generate a secure Encryption Key and Secret Key, and update `.env`:
+    ```bash
+    python3 -c "from cryptography.fernet import Fernet; print(f'ENCRYPTION_KEY={Fernet.generate_key().decode()}'); print('SECRET_KEY=change-me-to-random-string')"
+    ```
+    *Update `ENCRYPTION_KEY` and `SECRET_KEY` in your new `.env` file.*
+4.  Build and run:
+    ```bash
+    docker-compose up --build -d
     ```
 
-### 3. Set Kobo Token
-Set your KoboToolbox Admin Token as a secret:
+### Running the App
+
 ```bash
-wrangler secret put KOBO_API_TOKEN
-# Paste your token when prompted
+docker-compose up --build -d
 ```
 
-### 4. Deploy
-```bash
-wrangler deploy
-```
+The application will be available at `http://localhost:8003`.
 
-## Usage
+### Usage
 
-### URL Structure
-```
-https://<your-worker-subdomain>.workers.dev/exports/<ASSET_UID>/<EXPORT_SETTING_UID>/<FORMAT>?api_key=<YOUR_KEY>
-```
+1.  **Register**: Create an account via the web UI. You will need your **KoboToolbox API Key** (found in Kobo Account Settings -> Account -> API Token).
+2.  **Create Proxy**:
+    *   Enter a Friendly Name (e.g., "Main Survey PBI").
+    *   Enter the **Asset UID** (Form ID) from Kobo.
+    *   Enter the **Export Setting UID** (created in Kobo's "Downloads" section -> "New Export" -> Save Settings, then copy the UID from the URL or API).
+3.  **Connect PowerBI**:
+    *   On the Dashboard, click **Copy Link**.
+    *   In PowerBI, select **Get Data -> Web**.
+    *   Paste the URL.
+    *   The link format is: `http://<your-server>:8003/exports/<asset>/<setting>/xlsx?token=<proxy_token>`
+    *   This link embeds the authentication token, so no headers are required in PowerBI.
 
-*   **FORMAT**: `csv` or `xlsx`
+## Development
 
-### Example
-```bash
-curl "https://kobo-proxy.example.workers.dev/exports/aiBgJcvz5AFHB54fKpG2y5/esuPrAsvJANYiJ6jZcA9KM9/csv?api_key=partner-agency-key"
-```
+The source code is located in the `src/` directory:
+- `src/routes.py`: Main application logic and routing.
+- `src/models.py`: Database schema (User, ProxyConfig).
+- `src/templates/`: HTML templates using the style guide.
+- `src/crypto_utils.py`: Encryption helpers.
 
-## Power BI Integration
+## Security Note
 
-### Method 1: Web Connector (Recommended)
-1.  In Power BI Desktop, click **Get Data** -> **Web**.
-2.  Select **Advanced**.
-3.  Enter the full URL with the API key:
-    `https://.../exports/.../csv?api_key=partner-agency-key`
-4.  Click **OK**.
-5.  Select **Anonymous** authentication (the key is in the URL).
-
-### Method 2: Power Query (M Code)
-For more control, use this M code in the Advanced Editor:
-
-```powerquery
-let
-    BaseUrl = "https://your-worker.workers.dev",
-    AssetUid = "aiBgJcvz5AFHB54fKpG2y5",
-    ExportSettingUid = "esuPrAsvJANYiJ6jZcA9KM9",
-    ApiKey = "partner-agency-key",
-    
-    FullUrl = BaseUrl & "/exports/" & AssetUid & "/" & ExportSettingUid & "/csv?api_key=" & ApiKey,
-    
-    Source = Csv.Document(Web.Contents(FullUrl), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.None]),
-    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true])
-in
-    #"Promoted Headers"
-```
-
-## Troubleshooting
-
-*   **"Access to the resource is forbidden" (403) in Power BI**:
-    *   **Cause 1: Cloudflare WAF / Bot Fight Mode**: Cloudflare often blocks Power BI's User-Agent (`Microsoft.Data.Mashup`).
-        *   **Fix**: Go to your Cloudflare Dashboard -> Security -> WAF. Check the "Firewall Events" log. If you see blocked requests from Power BI, create a Custom Rule to **Skip** the WAF for requests where the User Agent contains `Microsoft.Data.Mashup`. Alternatively, disable "Bot Fight Mode".
-    *   **Cause 2: Stale Credentials**:
-        *   **Fix**: Go to **File** -> **Options and settings** -> **Data source settings**. Select the entry for your worker URL and click **Clear Permissions**. Then try connecting again, ensuring you select **Anonymous**.
-    *   **Cause 3: Invalid Key**: Ensure the API key in your URL matches exactly what is in `permissions.json`.
-
-*   **Invalid API Key**: Check that your key exists in the `permissions.json` you uploaded.
-*   **Access Denied**: Ensure the key is allowed to access the specific Asset UID and Export Setting UID requested.
-*   **Upstream Error**: If Kobo returns an error, the proxy will pass it through. Check if the Export Setting UID is valid and the export has been generated in Kobo.
-
-## License
-MIT
+The Kobo API Key is stored encrypted in the database. When a request is made to the proxy endpoint, the key is decrypted in memory solely to authenticate the request to KoboToolbox, and then discarded.

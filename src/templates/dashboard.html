@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <h1 style="margin-bottom:0;">My Proxies</h1>
+    <a href="{{ url_for('main.create_proxy') }}" class="btn">Create New Config</a>
+</div>
+
+<div class="card">
+    {% if proxies %}
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Asset / Setting</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for proxy in proxies %}
+            <tr>
+                <td>
+                    <div style="font-weight:500;">{{ proxy.name }}</div>
+                </td>
+                <td>
+                    <div style="font-size:12px; color:var(--text-secondary);">Asset: {{ proxy.asset_uid }}</div>
+                    <div style="font-size:12px; color:var(--text-secondary);">Setting: {{ proxy.setting_uid }}</div>
+                </td>
+                <td>
+                    <button class="btn btn-small copy-btn" 
+                            data-url="{{ url_for('main.proxy_export', asset_uid=proxy.asset_uid, setting_uid=proxy.setting_uid, fmt='xlsx', _external=True) }}?token={{ proxy.token }}">
+                        Copy Link
+                    </button>
+                    <a href="{{ url_for('main.delete_proxy', id=proxy.id) }}" 
+                       style="color:#721c24; font-size:12px; margin-left:8px;"
+                       onclick="return confirm('Are you sure? This will break any PBI dashboards using this token.')">
+                       Delete
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No proxy configurations found.</p>
+        <p style="margin-top:8px;">Create one to get started.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const url = e.target.getAttribute('data-url');
+            navigator.clipboard.writeText(url).then(() => {
+                const originalText = e.target.innerText;
+                e.target.innerText = 'Copied!';
+                e.target.style.background = '#d4edda';
+                e.target.style.color = '#155724';
+                setTimeout(() => {
+                    e.target.innerText = originalText;
+                    e.target.style.background = 'var(--primary-blue)';
+                    e.target.style.color = 'white';
+                }, 2000);
+            });
+        });
+    });
+</script>
+{% endblock %}

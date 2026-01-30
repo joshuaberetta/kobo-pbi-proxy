@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width: 400px; margin: 0 auto;">
+    <div class="card">
+        <h1>Register</h1>
+        <form method="post">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label>Kobo API Token</label>
+                <div style="font-size:11px; color:var(--text-secondary); margin-bottom:4px;">
+                    Found in KoboToolbox Account Settings
+                </div>
+                <input type="text" name="kobo_key" required placeholder="e.g. 4e5d6...">
+            </div>
+            <button type="submit" class="btn" style="width:100%">Register</button>
+        </form>
+        <div style="margin-top: 16px; text-align: center; font-size: 13px;">
+            <a href="{{ url_for('main.login') }}" style="color: var(--primary-blue); text-decoration: none;">Back to Login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

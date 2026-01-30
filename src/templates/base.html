@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kobo PBI Proxy</title>
+    <style>
+        :root {
+            --primary-blue: #4A90E2;
+            --primary-blue-hover: #357ABD;
+            --text-main: #2c3e50;
+            --text-body: #586069;
+            --text-secondary: #95a5a6;
+            --bg-page: #f4f5f7;
+            --bg-card: #ffffff;
+            --border: #d1d5da;
+            --input-border: #d1d5da;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-body);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 32px 40px;
+        }
+        
+        h1 {
+            color: var(--text-main);
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+        
+        h2 {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid var(--input-border);
+            border-radius: 3px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            font-size: 14px;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-blue-hover);
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-link {
+            background: none;
+            color: var(--primary-blue);
+            padding: 0;
+        }
+        
+        .btn-link:hover {
+            text-decoration: underline;
+        }
+        
+        .alert {
+            padding: 12px;
+            margin-bottom: 16px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        th {
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+            padding: 12px 8px;
+            font-weight: 500;
+        }
+        
+        td {
+            border-bottom: 1px solid var(--border);
+            padding: 12px 8px;
+        }
+
+        .navbar {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 16px 0;
+            margin-bottom: 32px;
+        }
+        
+        .navbar-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            color: var(--text-body);
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 14px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 40px 0;
+        }
+        
+        .code-snippet {
+            background: #f6f8fa;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #24292e;
+        }
+    </style>
+</head>
+<body>
+    {% if current_user.is_authenticated %}
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div style="font-weight:600; font-size:18px;">Kobo Proxy</div>
+            <div class="nav-links">
+                <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('main.logout') }}">Logout</a>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
