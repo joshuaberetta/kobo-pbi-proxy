@@ -32,13 +32,27 @@ This application proxies requests from PowerBI (or any HTTP client) to KoboToolb
     docker-compose up --build -d
     ```
 
-### Running the App
+### Production Deployment (DigitalOcean)
 
-```bash
-docker-compose up --build -d
-```
+1.  **Clone & Configure**:
+    ```bash
+    git clone https://github.com/your-repo/kobo-pbi-proxy.git /opt/kobo-pbi-proxy
+    cd /opt/kobo-pbi-proxy
+    cp .env.example .env
+    # EDIT .env NOW: Set FLASK_DEBUG=0 and generate real keys!
+    ```
 
-The application will be available at `http://localhost:8003`.
+2.  **Run with Docker**:
+    ```bash
+    docker-compose up -d --build
+    ```
+
+3.  **Setup Nginx & SSL**:
+    *   Install Nginx: `sudo apt install nginx`
+    *   Copy the config: `sudo cp nginx_conf/kobo-proxy.conf /etc/nginx/sites-available/kobo-proxy.imtools.info`
+    *   Enable it: `sudo ln -s /etc/nginx/sites-available/kobo-proxy.imtools.info /etc/nginx/sites-enabled/`
+    *   Test & Reload: `sudo nginx -t && sudo systemctl reload nginx`
+    *   Get SSL: `sudo apt install python3-certbot-nginx && sudo certbot --nginx -d kobo-proxy.imtools.info`
 
 ### Usage
 
