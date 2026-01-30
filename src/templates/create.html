@@ -1,22 +1,22 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="card">
-    <h1>Create New Proxy</h1>
+    <h1>{{ title }}</h1>
     <form method="post">
         <div class="form-group">
             <label>Configuration Name</label>
-            <input type="text" name="name" placeholder="e.g. Finance Dashboard" required>
+            <input type="text" name="name" placeholder="e.g. Finance Dashboard" required value="{{ proxy.name if proxy else '' }}">
         </div>
         <div class="form-group">
             <label>Asset UID (Form ID)</label>
-            <input type="text" name="asset_uid" placeholder="e.g. aD7s8f9d0s..." required>
+            <input type="text" name="asset_uid" placeholder="e.g. aD7s8f9d0s..." required value="{{ proxy.asset_uid if proxy else '' }}">
         </div>
         <div class="form-group">
             <label>Export Setting UID</label>
-            <input type="text" name="setting_uid" placeholder="e.g. 12345678" required>
+            <input type="text" name="setting_uid" placeholder="e.g. 12345678" required value="{{ proxy.setting_uid if proxy else '' }}">
         </div>
         <div style="margin-top: 24px;">
-            <button type="submit" class="btn">Create Proxy</button>
+            <button type="submit" class="btn">{{ btn_label }}</button>
             <a href="{{ url_for('main.dashboard') }}" class="btn-link" style="margin-left: 16px; font-size: 14px;">Cancel</a>
         </div>
     </form>

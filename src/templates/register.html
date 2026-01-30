@@ -5,25 +5,47 @@
         <h1>Register</h1>
         <form method="post">
             <div class="form-group">
-                <label>Email</label>
-                <input type="email" name="email" required>
+                <label>Username</label>
+                <input type="text" name="username" required>
             </div>
             <div class="form-group">
                 <label>Password</label>
                 <input type="password" name="password" required>
             </div>
             <div class="form-group">
+                <label>Kobo Server</label>
+                <select name="kobo_server" style="width: 100%; padding: 11px 12px; border: 1px solid var(--input-border); border-radius: 3px; font-size: 14px; background: white;">
+                    <option value="https://kf.kobotoolbox.org">Global (kf.kobotoolbox.org)</option>
+                    <option value="https://eu.kobotoolbox.org">EU (eu.kobotoolbox.org)</option>
+                    <option value="custom">Custom...</option>
+                </select>
+                <!-- Simple JS to handle custom input could be added here, but staying simple for now -->
+            </div>
+            <div class="form-group">
                 <label>Kobo API Token</label>
                 <div style="font-size:11px; color:var(--text-secondary); margin-bottom:4px;">
                     Found in KoboToolbox Account Settings
                 </div>
-                <input type="text" name="kobo_key" required placeholder="e.g. 4e5d6...">
+                <input type="password" name="kobo_key" required placeholder="e.g. 4e5d6...">
             </div>
-            <button type="submit" class="btn" style="width:100%">Register</button>
+            <button type="submit" class="btn" style="width:100%" id="submitBtn">Verify & Register</button>
         </form>
         <div style="margin-top: 16px; text-align: center; font-size: 13px;">
             <a href="{{ url_for('main.login') }}" style="color: var(--primary-blue); text-decoration: none;">Back to Login</a>
         </div>
     </div>
 </div>
+
+<script>
+document.querySelector('form').addEventListener('submit', function(e) {
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner">↻</span> Verifying...';
+});
+</script>
+
+<style>
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.spinner { display: inline-block; animation: spin 1s linear infinite; margin-right: 8px; }
+</style>
 {% endblock %}

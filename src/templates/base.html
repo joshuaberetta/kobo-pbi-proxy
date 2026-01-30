@@ -192,8 +192,16 @@
     <nav class="navbar">
         <div class="navbar-content">
             <div style="font-weight:600; font-size:18px;">Kobo Proxy</div>
-            <div class="nav-links">
+            <div class="nav-links" style="display:flex; align-items:center;">
+                {% if current_user.kobo_username %}
+                <span style="font-size:12px; color:var(--text-secondary); border:1px solid #d1d5da; padding:4px 8px; border-radius:12px; margin-right:12px;">
+                    <span style="color:#28a745;">&#10003;</span> Connected to 
+                    <strong title="{{ current_user.kobo_server }}">{{ current_user.kobo_server.split('//')[1] }}</strong> 
+                    as <b>{{ current_user.kobo_username }}</b>
+                </span>
+                {% endif %}
                 <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('main.help') }}">Help</a>
                 <a href="{{ url_for('main.logout') }}">Logout</a>
             </div>
         </div>

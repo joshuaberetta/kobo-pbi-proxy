@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <h1 style="border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 24px;">Help & Documentation</h1>
+
+    <div style="margin-bottom: 32px;">
+        <h2>1. Configuring a Proxy</h2>
+        <p style="margin-bottom: 12px; line-height: 1.5;">
+            To create a secure proxy link, you need two pieces of information from your KoboToolbox project:
+        </p>
+        <ol style="margin-left: 20px; line-height: 1.6;">
+            <li style="margin-bottom: 8px;">
+                <strong>Asset UID (Form ID):</strong> Found in the URL when viewing your project in Kobo. 
+                <br><span style="font-size:12px; color:var(--text-secondary);">Example: In `.../forms/aD7s8f9d0s.../landing`, the ID is `aD7s8f9d0s...`</span>
+            </li>
+            <li>
+                <strong>Export Setting UID:</strong>
+                <ul style="margin-left: 20px; margin-top: 4px;">
+                    <li>Go to your Kobo Project -> <strong>Data</strong> -> <strong>Downloads</strong>.</li>
+                    <li>Select your export type (XLS / CSV) and advanced options.</li>
+                    <li>Click <strong>Save Settings</strong> and name it (e.g., "PBI Auto").</li>
+                    <li>Once saved, the UID is hidden in the URL if you try to edit it, or you can find it via the API. 
+                        Alternatively, use the "Apply Saved Settings" dropdown, inspect the network request, or look for the ID in the URL bar if available.
+                    </li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div style="margin-bottom: 32px;">
+        <h2>2. Connecting to PowerBI</h2>
+        <p style="margin-bottom: 12px; line-height: 1.5;">
+            PowerBI Desktop can consume the data directly using the <strong>Web</strong> connector.
+        </p>
+        <ol style="margin-left: 20px; line-height: 1.6;">
+            <li>In this app, find your proxy in the Dashboard and click <strong>Copy Link</strong>.</li>
+            <li>In PowerBI Desktop, go to <strong>Home</strong> -> <strong>Get Data</strong> -> <strong>Web</strong>.</li>
+            <li>Paste the proxy URL.</li>
+            <li>Click <strong>OK</strong>.</li>
+            <li>If asked for credentials, select <strong>Anonymous</strong> (the authentication is already secured inside the unique Token in the URL).</li>
+            <li>PowerBI will load the Excel/CSV file directly.</li>
+        </ol>
+    </div>
+
+    <div>
+        <h2>3. Connecting to Google Sheets</h2>
+        <p style="margin-bottom: 12px; line-height: 1.5;">
+            You can pull live data into Google Sheets using the <code>IMPORTDATA</code> function, ensuring you use the <strong>csv</strong> format.
+        </p>
+        <ol style="margin-left: 20px; line-height: 1.6;">
+            <li>Copy the proxy link from the Dashboard.</li>
+            <li>
+                <strong>Important:</strong> If the link ends in `/xlsx`, change it to `/csv`.
+                <br><span style="font-size:12px; color:var(--text-secondary);">e.g. `.../exports/.../csv?token=...`</span>
+            </li>
+            <li>In a Google Sheet cell, type:
+                <br>
+                <code class="code-snippet">=IMPORTDATA("YOUR_PROXY_URL_HERE")</code>
+            </li>
+            <li>Press Enter. The data will load automatically.</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
