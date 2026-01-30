@@ -41,7 +41,7 @@
                 </td>
                 <td>
                     <button class="btn btn-small copy-btn" 
-                            data-url="{{ url_for('main.proxy_export', asset_uid=proxy.asset_uid, setting_uid=proxy.setting_uid, fmt='xlsx', _external=True) }}?token={{ proxy.token }}">
+                            data-url="{{ url_for('main.proxy_export', asset_uid=proxy.asset_uid, setting_uid=proxy.setting_uid, fmt='xlsx', _external=True, _scheme='https') }}?token={{ proxy.token }}">
                         Copy Link
                     </button>
                     <a href="{{ url_for('main.edit_proxy', id=proxy.id) }}" class="btn btn-small" style="background:#f4f5f7; color:var(--text-body); border:1px solid var(--border); margin-left:8px; text-decoration:none; display:inline-block;">
